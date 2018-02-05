@@ -1,0 +1,10 @@
+{
+  "name": "ParticleFireJs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Nicolas Toniazzi <nicolas@toniazzi.net>",
+  "license": "MIT",
+  "dependencies": {
+    "fscreen": "rafrex/fscreen"
+  }
+}
