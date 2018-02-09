@@ -35,3 +35,5 @@ class Particle
         this.blue = color.blue;
     }
 };
+
+export { Particle };

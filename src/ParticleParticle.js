@@ -1,3 +1,8 @@
+import { ParticleScreen } from "./ParticleScreen"
+import { rand, frand, abs, fabs, __max, __min }  from "./consts";
+
+const GRAVITY = 0.1;
+
 class ParticleParticle
 {
     constructor(numParticles, container) {
@@ -50,7 +55,7 @@ class ParticleParticle
         parent.lastTime = parent.time;
         parent.time = Date.now();
 
-        if (this.particleStyle === STYLE_STARFIELD) {
+        if (this.particleStyle === ParticleParticle.STYLE_STARFIELD) {
             this.frameStarfield();
         } else {
             this.frameGravity();
@@ -67,36 +72,36 @@ class ParticleParticle
         this.emit = false;
         this.popcorn = false;
     }
-    
+
     setMode(mode) {
         this.clearMode();
         switch (mode) {
-            case STYLE_EXPLOSIVE:
+            case ParticleParticle.STYLE_EXPLOSIVE:
                 this.explode = true;
                 break;
-            case STYLE_RINGS:
+            case ParticleParticle.STYLE_RINGS:
                 this.innerRing = true;
                 break;
-            case STYLE_SPIRALS:
+            case ParticleParticle.STYLE_SPIRALS:
                 this.emit = true;
                 this.emitRotate = (rand() % 3) - 1;
                 break;
-            case STYLE_POPCORN:
+            case ParticleParticle.STYLE_POPCORN:
                 this.popcorn = true;
                 break;
-            case STYLE_RAINBOWHOLE:
+            case ParticleParticle.STYLE_RAINBOWHOLE:
                 this.rainbowHole = true;
                 break;
-            case STYLE_WORMS:
+            case ParticleParticle.STYLE_WORMS:
                 this.suigglyWiggly = true;
                 break;
-            case STYLE_GALATIC_STORM:
+            case ParticleParticle.STYLE_GALATIC_STORM:
                 this.galacticStorm = true;
                 break;
-            case STYLE_PIXIE_DUST:
+            case ParticleParticle.STYLE_PIXIE_DUST:
                 this.pixieDust = true;
                 break;
-            case STYLE_GEOFF:
+            case ParticleParticle.STYLE_GEOFF:
                 break;
         }
     }
@@ -105,12 +110,12 @@ class ParticleParticle
         // Turn off the Wall of Fire for the starfield
         this.noiseBurn = -1;
         var parent = this.parent;
-        
+
         var halfw = parent.screen.width / 2;
         var halfh = parent.screen.height / 2;
         var i128 = 1 / (256 / 2);
         for (var i = 0; i < this.nParticles; i++) {
-            parent.p[i].attract = ATTRACT_NONE;
+            parent.p[i].attract = ParticleScreen.ATTRACT_NONE;
             if (!this.starsinit) {
                 parent.p[i].color = rand() % 255;
                 parent.p[i].setTrueColor(parent.pe);
@@ -151,7 +156,7 @@ class ParticleParticle
 
     frameGravity() {
         var parent = this.parent;
-        
+
         switch (((parent.time - parent.startTime) / this.GRAV_TIME) % 4) {
             case 0: this.xgrav = 0; this.ygrav = GRAVITY; this.burnDown = false; break;
             case 1: this.xgrav = -GRAVITY; this.ygrav = 0; break;
@@ -191,33 +196,33 @@ class ParticleParticle
         }
 
         // Set states based on the Particle Style
-        if (this.particleStyle === STYLE_NORMAL) {
+        if (this.particleStyle === ParticleParticle.STYLE_NORMAL) {
             if (rand() % (this.RANDEFFECT * 16) === 0) {
                 switch (rand() % 8) {
                     case 0:
-                        this.setMode(STYLE_SPIRALS);
+                        this.setMode(ParticleParticle.STYLE_SPIRALS);
                         break;
                     case 1:
-                        this.setMode(STYLE_EXPLOSIVE);
+                        this.setMode(ParticleParticle.STYLE_EXPLOSIVE);
                         break;
                     case 2:
-                        this.setMode(STYLE_RINGS);
+                        this.setMode(ParticleParticle.STYLE_RINGS);
                         break;
                     case 3:
-                        this.setMode(STYLE_POPCORN);
+                        this.setMode(ParticleParticle.STYLE_POPCORN);
                         break;
                     case 4:
-                        this.setMode(STYLE_RAINBOWHOLE);
+                        this.setMode(ParticleParticle.STYLE_RAINBOWHOLE);
                         this.doRainbowHole(1);
                         break;
                     case 5:
-                        this.setMode(STYLE_WORMS);
+                        this.setMode(ParticleParticle.STYLE_WORMS);
                         break;
                     case 6:
-                        this.setMode(STYLE_GALATIC_STORM);
+                        this.setMode(ParticleParticle.STYLE_GALATIC_STORM);
                         break;
                     case 7:
-                        this.setMode(STYLE_PIXIE_DUST);
+                        this.setMode(ParticleParticle.STYLE_PIXIE_DUST);
                         break;
                 }
             }
@@ -289,12 +294,12 @@ class ParticleParticle
         }
 
         // Test Particle
-        if (this.particleStyle == STYLE_GEOFF) {
+        if (this.particleStyle == ParticleParticle.STYLE_GEOFF) {
             this.doGeoff();
         }
-        
+
         // Debug
-        if (this.particleStyle == STYLE_STATIC) {
+        if (this.particleStyle == ParticleParticle.STYLE_STATIC) {
             this.doStatic();
         }
 
@@ -312,9 +317,9 @@ class ParticleParticle
 
     doPopcorn() {
         console.log('pop corn');
-        
+
         var parent = this.parent;
-        if (this.particleStyle != STYLE_POPCORN || this.firstInit == 0 || (this.particleStyle == STYLE_POPCORN && rand() % 50 == 0)) {
+        if (this.particleStyle != ParticleParticle.STYLE_POPCORN || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_POPCORN && rand() % 50 == 0)) {
             this.firstInit = 1; // Do this at least once
 
             for (var n = rand() % 15 + 5; n; n--) {
@@ -330,7 +335,7 @@ class ParticleParticle
                 var pvel, angle;
                 for (var ii = this.nParticles / 20; ii; ii--) {
                     var i = rand() % this.nParticles;
-//                    parent.p[i].attract = ATTRACT_GRAVITY;
+//                    parent.p[i].attract = ParticleScreen.ATTRACT_GRAVITY;
                     parent.p[i].x = ex;
                     parent.p[i].y = ey;
                     if (sunburst) {
@@ -355,10 +360,10 @@ class ParticleParticle
 
     doInnerRing() {
         console.log('inner ring');
-        
+
         var parent = this.parent;
-        
-        if (this.articleStyle != STYLE_RINGS || this.firstInit == 0 || (this.particleStyle == STYLE_RINGS && rand() % 1000 == 0) ) {
+
+        if (this.articleStyle != ParticleParticle.STYLE_RINGS || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_RINGS && rand() % 1000 == 0) ) {
             this.firstInit = 1; // Do this at least once
 
             var velocity = fabs(frand(10.0)) + 2.0;
@@ -412,15 +417,15 @@ class ParticleParticle
             parent.p[i].dx -= this.xgrav * 40;
             parent.p[i].dy -= this.ygrav * 40;
         }
-        
+
         this.shakeUp = false;
     }
 
     doFreeze() {
         console.log('freeze');
-        
+
         var parent = this.parent;
-        
+
         for (var i = 0; i < this.nParticles; i++) {
             parent.p[i].dx = 0.0;
             parent.p[i].dy = 0.0;
@@ -433,7 +438,7 @@ class ParticleParticle
 
         if (this.firstInit == 0) {
             this.firstInit = 1;
-            
+
             var w = parent.screen.width;
             var h = parent.screen.height;
             var t = this.nParticles;
@@ -453,7 +458,7 @@ class ParticleParticle
                 parent.p[i].dy = 0.0;
                 parent.p[i].color = 180;
                 parent.p[i].setTrueColor(parent.pe);
-                
+
                 x += offsetX;
                 if (x >= w) {
                     x = offsetX;
@@ -465,7 +470,7 @@ class ParticleParticle
 //        for(var i = 0; i < t; i++) {
 //            parent.p[i].dx = 0.0;
 //            parent.p[i].dy = 0.0;
-//            
+//
 //            if (this.altColor) {
 //                parent.p[i].color = rand() % 84 + 170;
 //            }
@@ -473,30 +478,30 @@ class ParticleParticle
 //            parent.p[i].setTrueColor(parent.pe);
 //        }
     }
-    
+
     doExplode() {
 //        console.log('explode');
-        
+
         var parent = this.parent;
-        if (this.particleStyle !== STYLE_EXPLOSIVE || this.firstInit == 0 || (this.particleStyle == STYLE_EXPLOSIVE && rand() % 50 == 0)) {
+        if (this.particleStyle !== ParticleParticle.STYLE_EXPLOSIVE || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_EXPLOSIVE && rand() % 50 == 0)) {
             this.firstInit = 1; // Do this at least once
 
             var velocity = fabs(frand(5.0)) + 3.0;
             var ex, ey;
             var sunburst = rand() & 1;
             if (this.explodeX == 0 || this.explodeY == 0) {
-                ex = (XOFF + rand() % (parent.screen.WIDTH - XOFF * 2));
-                ey = (YOFF + rand() % (parent.screen.HEIGHT - YOFF * 2));
+                ex = (ParticleScreen.XOFF + rand() % (parent.screen.WIDTH - ParticleScreen.XOFF * 2));
+                ey = (ParticleScreen.YOFF + rand() % (parent.screen.HEIGHT - ParticleScreen.YOFF * 2));
             } else {
-                ex = __min(__max(this.explodeX, XOFF), parent.screen.WIDTH - XOFF - 1);
-                ey = __min(__max(this.explodeY, YOFF), parent.screen.HEIGHT - YOFF - 1);
+                ex = __min(__max(this.explodeX, ParticleScreen.XOFF), parent.screen.WIDTH - ParticleScreen.XOFF - 1);
+                ey = __min(__max(this.explodeY, ParticleScreen.YOFF), parent.screen.HEIGHT - ParticleScreen.YOFF - 1);
             }
             this.explodeX = this.explodeY = 0;
             var pvel, angle;
             var exprob = (rand() % 3) + 1;
             for (var i = 0; i < this.nParticles; i++) {
                 // pourquoi je dois l'ajouter ici?
-//                parent.p[i].attract = ATTRACT_GRAVITY;
+//                parent.p[i].attract = ParticleScreen.ATTRACT_GRAVITY;
                 if (i % exprob == 0) {
                     parent.p[i].x = ex;
                     parent.p[i].y = ey;
@@ -522,11 +527,11 @@ class ParticleParticle
 
     doComet() {
         console.log('comet');
-        
+
         var parent = this.parent;
         var velocity = fabs(frand(8.0));
-        var ex = (XOFF + rand() % (parent.screen.WIDTH - XOFF * 2));
-        var ey = (YOFF + rand() % (parent.screen.HEIGHT - YOFF * 2));
+        var ex = (ParticleScreen.XOFF + rand() % (parent.screen.WIDTH - ParticleScreen.XOFF * 2));
+        var ey = (ParticleScreen.YOFF + rand() % (parent.screen.HEIGHT - ParticleScreen.YOFF * 2));
         var angle = frand(Math.PI);
         for (var i = 0; i < this.nParticles; i++) {
             parent.p[i].x = ex + frand(1.0);
@@ -544,9 +549,9 @@ class ParticleParticle
 
     doEmit() {
         console.log('emit');
-        
+
         var parent = this.parent;
-        if (this.particleStyle != STYLE_SPIRALS || this.firstInit == 0 || (this.particleStyle == STYLE_SPIRALS && rand()%500 == 0) ) {
+        if (this.particleStyle != ParticleParticle.STYLE_SPIRALS || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_SPIRALS && rand()%500 == 0) ) {
             this.firstInit = 1; // Do this at least once
             var i;
             this.emitCount = this.nParticles;
@@ -560,7 +565,7 @@ class ParticleParticle
                 if (!this.firstInit) {
                     this.emitCount = __max(this.emitCount - __max(this.nParticles / 100, 1), 0);
                 }
-                
+
                 while (i-- > this.emitCount) {
                     parent.p[i].x = (parent.screen.WIDTH / 2);
                     parent.p[i].y = (parent.screen.HEIGHT / 2);
@@ -571,7 +576,7 @@ class ParticleParticle
                         parent.p[i].dx = 0.0;
                         parent.p[i].dy = 0.0;
                     }
-                    
+
                     if (this.altColor) {
                         parent.p[i].color = rand() % 84 + 170;
                     }
@@ -598,14 +603,14 @@ class ParticleParticle
                     parent.p[i].ax = parent.p[i & ~tt].x;
                     parent.p[i].ay = parent.p[i & ~tt].y;
                 }
-                parent.p[i].attract = ATTRACT_ANGLE | (this.useGravity ? ATTRACT_GRAVITY : 0);
+                parent.p[i].attract = ParticleScreen.ATTRACT_ANGLE | (this.useGravity ? ParticleScreen.ATTRACT_GRAVITY : 0);
             } else {
                 if (this.followMouse) {
                     parent.p[i].ax = parent.xMouse;
                     parent.p[i].ay = parent.yMouse;
-                    parent.p[i].attract = ATTRACT_ANGLE | (this.useGravity ? ATTRACT_GRAVITY : 0);
+                    parent.p[i].attract = ParticleScreen.ATTRACT_ANGLE | (this.useGravity ? ParticleScreen.ATTRACT_GRAVITY : 0);
                 } else {
-                    parent.p[i].attract = ATTRACT_NONE | (this.useGravity ? ATTRACT_GRAVITY : 0);
+                    parent.p[i].attract = ParticleScreen.ATTRACT_NONE | (this.useGravity ? ParticleScreen.ATTRACT_GRAVITY : 0);
                 }
                 parent.p[i].setTrueColor(parent.pe);    //Make leaders constantly change true color.
             }
@@ -626,7 +631,7 @@ class ParticleParticle
 
     doPixieDust(init) {
         console.log('pixie dust');
-        
+
         var parent = this.parent;
         var velocity, angle;
 
@@ -750,7 +755,7 @@ class ParticleParticle
     // Atomic particles
     doGeoff(init) {
         console.log('geoff');
-        
+
         var velocity, angle;
 
         var leaderPartition = 5;        // Partition between leaders (number of followers to leaders)
@@ -869,3 +874,32 @@ class ParticleParticle
         }
     }
 }
+
+ParticleParticle.STYLE_NORMAL = 0;
+ParticleParticle.STYLE_STARFIELD = 1;
+ParticleParticle.STYLE_EXPLOSIVE = 2;
+ParticleParticle.STYLE_RINGS = 3;
+ParticleParticle.STYLE_SPIRALS = 4;
+ParticleParticle.STYLE_POPCORN = 5;
+ParticleParticle.STYLE_RAINBOWHOLE = 6;
+ParticleParticle.STYLE_WORMS = 7;
+ParticleParticle.STYLE_GALATIC_STORM = 8;
+ParticleParticle.STYLE_PIXIE_DUST = 9;
+ParticleParticle.STYLE_GEOFF = 10;
+ParticleParticle.STYLE_STATIC = 11;
+
+ParticleParticle.styles = [];
+ParticleParticle.styles[ParticleParticle.STYLE_NORMAL] = "Normal";
+ParticleParticle.styles[ParticleParticle.STYLE_STARFIELD] = "Starfield";
+ParticleParticle.styles[ParticleParticle.STYLE_EXPLOSIVE] = "Explosive";
+ParticleParticle.styles[ParticleParticle.STYLE_RINGS] = "Rings";
+ParticleParticle.styles[ParticleParticle.STYLE_SPIRALS] = "Spirals";
+ParticleParticle.styles[ParticleParticle.STYLE_POPCORN] = "Popcorn";
+ParticleParticle.styles[ParticleParticle.STYLE_RAINBOWHOLE] = "Rainbow Hole";
+ParticleParticle.styles[ParticleParticle.STYLE_WORMS] = "Worms";
+ParticleParticle.styles[ParticleParticle.STYLE_GALATIC_STORM] = "Galactic Storm";
+ParticleParticle.styles[ParticleParticle.STYLE_PIXIE_DUST] = "Pixie Dust";
+ParticleParticle.styles[ParticleParticle.STYLE_GEOFF] = "Geoff";
+ParticleParticle.styles[ParticleParticle.STYLE_STATIC] = "Static";
+
+export { ParticleParticle }

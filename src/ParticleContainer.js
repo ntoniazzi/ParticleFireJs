@@ -1,3 +1,4 @@
+import { Color } from './Color'
 
 class ParticleContainer
 {
@@ -32,3 +33,5 @@ class ParticleContainer
         this.screen.draw();
     }
 }
+
+export { ParticleContainer }

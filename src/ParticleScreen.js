@@ -1,25 +1,37 @@
+import { rand, frand, abs, fabs, __max, __min }  from "./consts";
+import { Color } from './Color'
+import { Palette } from './Palette'
+import { Particle } from './Particle'
+
+const KICK_STRENGTH = 0.5;
+//const FADE_SPEED = 4;
+const BOUNCE = 0.95;
+const BXOFF = 4;
+const BX4OFF = BXOFF / 4;
+const BYOFF = 2;
+
 class ParticleScreen
 {
     constructor(container) {
         this.parent = container;
-        
+
         this.flameSpeed = 0.03;
         this.burnFade = 3;
         this.disableFire = 0;
-        
+
         this.colorScheme = 0;
         this.randomColor = false;
         this.cycleColors = 0;
-        
+
         this.width = this.height = 0;
-        
+
         this.customPe1 = new Color(0,0,0);
         this.customPe2 = new Color(255,255,255);
     }
-    
+
     initScreen(canvas) {
         var parent = this.parent;
-        
+
         this.dib = canvas;
         this.width = this.WIDTH = this.dib.width;
         this.height = this.HEIGHT = this.dib.height;
@@ -27,7 +39,7 @@ class ParticleScreen
         if (this.randomColor) {
             this.colorScheme = rand() % (Palette.schemes.length);
         }
-        
+
         var i;
 
         //Create fading lookup table.
@@ -37,14 +49,14 @@ class ParticleScreen
         }
 
         // Initialize particles
-        for (var i = 0; i < MAX_PART; i++) {
+        for (var i = 0; i < ParticleScreen.MAX_PART; i++) {
             parent.p[i] = new Particle();
-            parent.p[i].x = parent.p[i].lx = (XOFF + rand() % (this.width - XOFF * 2));
-            parent.p[i].y = parent.p[i].ly = (YOFF + rand() % (this.height - YOFF * 2));
+            parent.p[i].x = parent.p[i].lx = (ParticleScreen.XOFF + rand() % (this.width - ParticleScreen.XOFF * 2));
+            parent.p[i].y = parent.p[i].ly = (ParticleScreen.YOFF + rand() % (this.height - ParticleScreen.YOFF * 2));
             parent.p[i].dx = parent.p[i].dy = 0.0;
             parent.p[i].color = (rand() % 127 + 127) | 0;
         }
-        
+
         parent.timeStart = parent.lastTime = parent.time = Date.now();
         parent.particle.follow = rand() & 1;
         parent.particle.multipleFollow = rand() & 1;
@@ -59,6 +71,7 @@ class ParticleScreen
 
     palette(schemeIndex)
     {
+        this.colorScheme = schemeIndex;
         var palette = Palette.schemes[schemeIndex];
         var parent = this.parent;
         palette.colors.forEach(function (color, i) {
@@ -152,9 +165,9 @@ class ParticleScreen
 //                        data[lptr] = 255;
 //                        lptr++;
                         // alpha
-                        
-                        
-                        
+
+
+
                         lptr+=4;
                     }
                 }
@@ -184,12 +197,12 @@ class ParticleScreen
 
             parent.p[i].lx = parent.p[i].x;
             parent.p[i].ly = parent.p[i].y;
-            if (parent.p[i].attract & ATTRACT_GRAVITY) {
+            if (parent.p[i].attract & ParticleScreen.ATTRACT_GRAVITY) {
                 parent.p[i].dx += parent.particle.xgrav;
                 parent.p[i].dy += parent.particle.ygrav;
             }
 
-            if (parent.p[i].attract & ATTRACT_ANGLE) {
+            if (parent.p[i].attract & ParticleScreen.ATTRACT_ANGLE) {
                 adx = parent.p[i].ax - parent.p[i].x;
                 ady = parent.p[i].ay - parent.p[i].y;
                 dist = Math.sqrt(adx * adx + ady * ady);
@@ -229,8 +242,8 @@ class ParticleScreen
             parent.p[i].y += parent.p[i].dy;
 
             // edge collisions.
-            if (parent.p[i].x < XOFF) {
-                parent.p[i].x = XOFF;
+            if (parent.p[i].x < ParticleScreen.XOFF) {
+                parent.p[i].x = ParticleScreen.XOFF;
                 parent.p[i].dx = fabs(parent.p[i].dx) * BOUNCE;
                 parent.p[i].dy += frand(KICK_STRENGTH);
                 if (parent.particle.altColor) {
@@ -238,8 +251,8 @@ class ParticleScreen
                 }
             }
 
-            if (parent.p[i].x >= WIDTH - XOFF) {
-                parent.p[i].x = WIDTH - XOFF - 1;
+            if (parent.p[i].x >= WIDTH - ParticleScreen.XOFF) {
+                parent.p[i].x = WIDTH - ParticleScreen.XOFF - 1;
                 parent.p[i].dx = -fabs(parent.p[i].dx) * BOUNCE;
                 parent.p[i].dy += frand(KICK_STRENGTH);
                 if (parent.particle.altColor) {
@@ -247,8 +260,8 @@ class ParticleScreen
                 }
             }
 
-            if (parent.p[i].y < YOFF) {
-                parent.p[i].y = YOFF;
+            if (parent.p[i].y < ParticleScreen.YOFF) {
+                parent.p[i].y = ParticleScreen.YOFF;
                 parent.p[i].dy = fabs(parent.p[i].dy) * BOUNCE;
                 parent.p[i].dx += frand(KICK_STRENGTH);
                 if (parent.particle.altColor) {
@@ -256,8 +269,8 @@ class ParticleScreen
                 }
             }
 
-            if (parent.p[i].y >= HEIGHT - YOFF) {
-                parent.p[i].y = HEIGHT - YOFF - 1;
+            if (parent.p[i].y >= HEIGHT - ParticleScreen.YOFF) {
+                parent.p[i].y = HEIGHT - ParticleScreen.YOFF - 1;
                 parent.p[i].dy = -fabs(parent.p[i].dy) * BOUNCE;
                 parent.p[i].dx += frand(KICK_STRENGTH);
                 if (parent.particle.altColor) {
@@ -273,7 +286,7 @@ class ParticleScreen
             // console.log("Draw %d particle at [%o,%o] [%o,%o]", i, x, y, dx, dy);
 
             // Make sure LAST coords are inside bounds too.
-            if (x < XOFF || y < YOFF || x >= WIDTH - XOFF || y >= HEIGHT - YOFF) {
+            if (x < ParticleScreen.XOFF || y < ParticleScreen.YOFF || x >= WIDTH - ParticleScreen.XOFF || y >= HEIGHT - ParticleScreen.YOFF) {
                 continue;
             }
 
@@ -388,13 +401,13 @@ class ParticleScreen
             }
         }
     }
-    
+
     write(x, y, text) {
         var ctx = this.ctx;
         ctx.fillStyle = "white";
         ctx.font = '12px sans-serif';
         y += 12;
-        
+
         text.split("\n").forEach(function (line) {
             ctx.fillText(line, x, y);
 
@@ -402,3 +415,15 @@ class ParticleScreen
         });
     }
 }
+
+// constants
+ParticleScreen.XOFF = 5;
+ParticleScreen.YOFF = 3;
+
+ParticleScreen.ATTRACT_NONE = 0;
+ParticleScreen.ATTRACT_GRAVITY = 1;
+ParticleScreen.ATTRACT_ANGLE = 2;
+
+ParticleScreen.MAX_PART = 10000;
+
+export { ParticleScreen }

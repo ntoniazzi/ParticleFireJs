@@ -1,12 +1,14 @@
+import { Color } from "./Color";
+
 class Palette
 {
     constructor(name, color1, color2) {
         this.name = name;
         this.colors = [];
-        
+
         this.setColors(color1, color2);
     }
-    
+
     setColors(color1, color2) {
         for (var i = 0; i < 256; i++) {
             if (i < 128) {
@@ -38,3 +40,5 @@ Palette.schemes = [
   new Palette("Flaming Metal", new Color(128, 0, 41), new Color(255, 192, 128)),
   new Palette("Custom", new Color(0, 0, 0), new Color(255, 255, 255)),
 ];
+
+export { Palette };
