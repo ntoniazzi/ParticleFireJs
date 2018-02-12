@@ -2,6 +2,8 @@
 
 This is a port of https://github.com/LongbowGames/ParticleFire to javascript.
 
+You can try it here : https://ntoniazzi.github.io/ParticleFireJs/
+
 # TODO
 
 Some parts are still missing:
