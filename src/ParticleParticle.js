@@ -3,17 +3,39 @@ import { rand, frand, abs, fabs, __max, __min }  from "./consts";
 
 const GRAVITY = 0.1;
 
+class Static
+{
+    constructor(name, init) {
+        this.name = name;
+        this.value= init;
+    }
+
+    static init(name, value) {
+        if (undefined === Static.items[name]) {
+            Static.items[name] = new Static(name, value);
+        }
+
+        return Static.items[name];
+    }
+}
+Static.items = {};
+
 class ParticleParticle
 {
-    constructor(numParticles, container) {
+    constructor(numParticles, container)
+    {
         this.parent = container;
+
         this.identityAngle = 3.0;
-        this.particleStyle = 0;
+        this.particleStyle = ParticleParticle.STYLE_NORMAL;
+        this.wallStyle = 0;
         this.zMoveSpeed = 2;
+        
         this.nParticles = numParticles;
-        this.GRAV_TIME = 40;
+        this.GRAV_TIME = 50;
         this.RANDEFFECT = 75;
         this.altColor = false;
+        
         this.noiseBurn = false;
         this.follow = true;
         this.multipleFollow = true;
@@ -35,19 +57,20 @@ class ParticleParticle
         this.explodeX = 0;
         this.explodeY = 0;
         //, MouseX, MouseY;
-
         this.innerRing = false;
         this.popcorn = false;
+        
         this.emitRotate = 0;
         this.xgrav = 0.0;
         this.ygrav = 0.0;
         this.burnDown = false;
+        
         this.squigglyWiggly = false;
         this.galacticStorm = false;
         this.pixieDust = false;
-
-        this.starsinit = false;
-        this.firstInit = 0;
+        
+        this.magnetX = 0;
+        this.magnetY = 0;
     }
 
     frame() {
@@ -111,14 +134,17 @@ class ParticleParticle
         this.noiseBurn = -1;
         var parent = this.parent;
 
+        var starsinit = Static.init('frameStarfield.starsinit', 0);
+
         var halfw = parent.screen.width / 2;
         var halfh = parent.screen.height / 2;
         var i128 = 1 / (256 / 2);
         for (var i = 0; i < this.nParticles; i++) {
             parent.p[i].attract = ParticleScreen.ATTRACT_NONE;
-            if (!this.starsinit) {
+            if (!starsinit.value) {
                 parent.p[i].color = rand() % 255;
                 parent.p[i].setTrueColor(parent.pe);
+                //
                 parent.p[i].ax = frand(1.0);
                 parent.p[i].ay = frand(1.0);
             }
@@ -151,7 +177,7 @@ class ParticleParticle
             parent.p[i].y = ly * halfh + halfh;
         }
 
-        this.starsinit = 1;
+        starsinit.value = 1;
     }
 
     frameGravity() {
@@ -197,7 +223,9 @@ class ParticleParticle
 
         // Set states based on the Particle Style
         if (this.particleStyle === ParticleParticle.STYLE_NORMAL) {
+            // Randomly change things
             if (rand() % (this.RANDEFFECT * 16) === 0) {
+                // Randomly cycle through the modes
                 switch (rand() % 8) {
                     case 0:
                         this.setMode(ParticleParticle.STYLE_SPIRALS);
@@ -299,9 +327,9 @@ class ParticleParticle
         }
 
         // Debug
-        if (this.particleStyle == ParticleParticle.STYLE_STATIC) {
-            this.doStatic();
-        }
+//        if (this.particleStyle == ParticleParticle.STYLE_STATIC) {
+//            this.doStatic();
+//        }
 
         // Attract or Follow the Mouse (left over from Particle Toy?)
         if (this.attract || this.followMouse) {
@@ -318,13 +346,15 @@ class ParticleParticle
     doPopcorn() {
         console.log('pop corn');
 
+        var firstInit = Static.init('doPopcorn.firstInit', 0);
+
         var parent = this.parent;
-        if (this.particleStyle != ParticleParticle.STYLE_POPCORN || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_POPCORN && rand() % 50 == 0)) {
-            this.firstInit = 1; // Do this at least once
+        if (this.particleStyle != ParticleParticle.STYLE_POPCORN || firstInit.value == 0 || (this.particleStyle == ParticleParticle.STYLE_POPCORN && rand() % 50 == 0)) {
+            firstInit.value = 1; // Do this at least once
 
             for (var n = rand() % 15 + 5; n; n--) {
                 // 6.0 + 1.0
-                var velocity = fabs(frand(4.0)) + 4.0;
+                var velocity = fabs(frand(6.0)) + 1.0;
                 var ex, ey;
                 var sunburst = rand() & 1;
                 var pnt = rand() % this.nParticles;
@@ -363,8 +393,10 @@ class ParticleParticle
 
         var parent = this.parent;
 
-        if (this.articleStyle != ParticleParticle.STYLE_RINGS || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_RINGS && rand() % 1000 == 0) ) {
-            this.firstInit = 1; // Do this at least once
+        var firstInit = Static.init('doInnerRing.firstInit', 0);
+
+        if (this.articleStyle != ParticleParticle.STYLE_RINGS || firstInit.value == 0 || (this.particleStyle == ParticleParticle.STYLE_RINGS && rand() % 1000 == 0) ) {
+            firstInit.value = 1; // Do this at least once
 
             var velocity = fabs(frand(10.0)) + 2.0;
             var pvel, angle;
@@ -433,11 +465,13 @@ class ParticleParticle
         this.freeze = false;
     }
 
-    doStatic() {
+    doStatic(init) {
         var parent = this.parent;
 
-        if (this.firstInit == 0) {
-            this.firstInit = 1;
+        var firstInit = Static.init('doStatic.firstInit', 0);
+        
+        if (init || firstInit.value == 0) {
+            firstInit.value = 1;
 
             var w = parent.screen.width;
             var h = parent.screen.height;
@@ -454,8 +488,12 @@ class ParticleParticle
             for (var i = 0; i < t; i++) {
                 parent.p[i].x = x;
                 parent.p[i].y = y;
-                parent.p[i].dx = 0.0;
-                parent.p[i].dy = 0.0;
+                
+                var tx = x - w/2, ty = y - h/2;
+                var d = Math.sqrt(tx * tx + ty * ty);
+
+                parent.p[i].dx = - tx / d;
+                parent.p[i].dy = - ty / d;
                 parent.p[i].color = 180;
                 parent.p[i].setTrueColor(parent.pe);
 
@@ -480,13 +518,16 @@ class ParticleParticle
     }
 
     doExplode() {
-//        console.log('explode');
-
         var parent = this.parent;
-        if (this.particleStyle !== ParticleParticle.STYLE_EXPLOSIVE || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_EXPLOSIVE && rand() % 50 == 0)) {
-            this.firstInit = 1; // Do this at least once
+        
+        var firstInit = Static.init('doExplode.firstInit', 0);
+        
+        if (this.particleStyle !== ParticleParticle.STYLE_EXPLOSIVE || firstInit.value == 0 || (this.particleStyle == ParticleParticle.STYLE_EXPLOSIVE && rand() % 50 == 0)) {
+            console.log('explode');
 
-            var velocity = fabs(frand(5.0)) + 3.0;
+            firstInit.value = 1; // Do this at least once
+
+            var velocity = fabs(frand(9.0)) + 3.0;
             var ex, ey;
             var sunburst = rand() & 1;
             if (this.explodeX == 0 || this.explodeY == 0) {
@@ -549,10 +590,12 @@ class ParticleParticle
 
     doEmit() {
         console.log('emit');
-
         var parent = this.parent;
-        if (this.particleStyle != ParticleParticle.STYLE_SPIRALS || this.firstInit == 0 || (this.particleStyle == ParticleParticle.STYLE_SPIRALS && rand()%500 == 0) ) {
-            this.firstInit = 1; // Do this at least once
+        
+        var firstInit = Static.init('doEmit.firstInit', 0);
+
+        if (this.particleStyle != ParticleParticle.STYLE_SPIRALS || firstInit.value == 0 || (this.particleStyle == ParticleParticle.STYLE_SPIRALS && rand()%500 == 0) ) {
+            firstInit.value = 1; // Do this at least once
             var i;
             this.emitCount = this.nParticles;
 
@@ -617,21 +660,240 @@ class ParticleParticle
         }
     }
 
-    doRainbowHole() {
+    doRainbowHole(initNow) {
         console.log('rainbow hole');
-    }
+        
+        var parent = this.parent;
+        
+        var init = Static.init('doRainbowHole.init', 0);        // Has this style been init'd?
+        var velocity = Static.init('doRainbowHole.velocity', 0);
+        
+        // Randomly re-init the pepper
+        //	if (rand()%175 == 0 || !init)
+        if (!init.value || initNow || (this.particleStyle == ParticleParticle.STYLE_RAINBOWHOLE && rand()%1000 == 0)) {
+            // Create velocity
+            velocity.value = __max(fabs(frand(6.0)), 1.0);
 
-    doSquigglyWiggly() {
+            // Randomly pick new magnet point
+            this.magnetX = parent.screen.WIDTH/2 + rand() % 100 - 50;
+        
+            // If we are burning up
+            if (!this.burnDown) {
+                this.magnetY = __min(parent.screen.HEIGHT/2 + rand()%80 - 40 + (parent.screen.HEIGHT/4), parent.screen.HEIGHT-20);
+            } else {
+                this.magnetY = __max(parent.screen.HEIGHT/2 + rand()%80 - 40 - (parent.screen.HEIGHT/4), 20);
+            }
+                
+            // Cycle through the particles
+            for (var i = 0; i < this.nParticles; i++) {
+                // Randomly place the particles on the screen
+                parent.p[i].x = rand() % parent.screen.WIDTH;
+                parent.p[i].y = rand() % parent.screen.HEIGHT;
+
+                // Point to the movement direction at the Magnet point
+                var dist = this.distance(parent.p[i].x, parent.p[i].y, this.magnetX, this.magnetY);
+                parent.p[i].dx = ( (this.magnetX - parent.p[i].x) / dist) * velocity.value;
+                parent.p[i].dy = ( (this.magnetY - parent.p[i].y) / dist) * velocity.value;
+
+                // Randomly set color
+                if (this.altColor) {
+                    parent.p[i].color = rand() % 84 + 170;
+                }
+            
+                parent.p[i].setTrueColor(parent.pe);
+            }
+
+            init.value = 1;     // Make sure we've init'd the style
+        } else {
+            if (rand()%10 == 0) {
+                // Move the magnet to the right or left
+                this.magnetX += rand()%10 - 5;
+                if (this.magnetX < 30) {
+                    this.magnetX = 30;
+                } else if (this.magnetX > parent.screen.WIDTH-30) {
+                    this.magnetX = parent.screen.WIDTH-30;
+                }
+                // MagnetX = parent.screen.WIDTH/2 + rand()%100 - 50;
+
+                // Cycle through the particles
+                for (var i = 0; i < this.nParticles; i++) {
+                    // Point to the movement direction at the Magnet point
+                    var dist = this.distance(parent.p[i].x, parent.p[i].y, this.magnetX, this.magnetY);
+                    parent.p[i].dx = ( (this.magnetX - parent.p[i].x) / dist) * velocity.value;
+                    parent.p[i].dy = ( (this.magnetY - parent.p[i].y) / dist) * velocity.value;
+
+                    // Randomly set color
+                    //if(AltColor) parent.p[i].color = rand() % 254;
+                    if (this.altColor) {
+                        parent.p[i].color = rand() % 84 + 170;
+                    }
+                    //
+                    parent.p[i].setTrueColor(parent.pe);
+                }
+            }
+        }
+    }
+    
+    distance(x1, y1, x2, y2) {
+        var dist;
+        var tx, ty;         // Temp
+    
+        // Check Special Cases //
+        if (x1 == x2) {
+            return fabs(y1 - y2);
+        }
+        if (y1 == y2) {
+            return fabs(x1 - x2);
+        }
+
+        tx = x1 - x2;   // Set initial x distances //
+        ty = y1 - y2;   // Dont need to abs() them since their going to be squared //
+
+        dist = Math.sqrt((tx * tx) + (ty * ty));    // Dist. Formula //
+
+        return dist;
+    } /// vtMath::Distance()
+
+    doSquigglyWiggly(init) {
         console.log('squiggly wiggly');
+        var parent = this.parent;
+
+        var firstInit = Static.init('doSquigglyWiggly.firstInit', 0);
+        var velocity, angle;
+
+        // If we're initing the routine
+        if (init || !firstInit.value || rand() % 1500 == 0) {
+            // Cycle through the particles
+            for (var i=0; i < this.nParticles; i++) {
+                // Random position of the particle
+                parent.p[i].x = rand() % (parent.screen.WIDTH-20) + 10;
+                parent.p[i].y = rand() % (parent.screen.HEIGHT-20) + 10;
+                //
+                if (this.altColor) {
+                    parent.p[i].color = rand() % 84 + 170;
+                }
+                //
+                parent.p[i].setTrueColor(parent.pe);
+            }
+        }
+
+        // Create velocity
+        velocity = __max(fabs(frand(6.0)), 1.0);
+
+        for (var i=0; i < this.nParticles; i++) {
+            // If this is a leader particle
+            if (i % 5 === 0) {
+                // Randomly change direction
+                if (rand() % 100) {
+                    parent.p[i].dx = frand(1.0) * velocity;
+                    parent.p[i].dy = frand(1.0) * velocity;
+                }
+            } else {
+                // Follower particle
+                var leader = i - i%5;   // Save the leader particle
+
+                // Move this particle automatically the DX/DY of the leader so that it keeps pace.  This way the particles movement will all be about circling
+                parent.p[i].x += parent.p[i].dx;
+                parent.p[i].y += parent.p[i].dy;
+
+                // Circle around the leader, twice the velocity?
+    //			int lx = parent.p[leader].x, ly = parent.p[leader].y;
+
+                // Set circular delta
+                angle = frand(Math.PI);
+                parent.p[i].dx = cos(angle) * velocity;
+                parent.p[i].dy = sin(angle) * velocity;
+                //
+                if (this.altColor) {
+                    parent.p[i].color = rand() % 84 + 170;
+                }
+                //
+                parent.p[i].setTrueColor(parent.pe);
+            }
+        }
     }
 
-    doGalacticStorm() {
+    doGalacticStorm(init) {
         console.log('galactic storm');
+        var parent = this.parent;
+        
+        var firstInit = Static.init('doGalacticStorm.firstInit', 0);
+        var velocity, angle;
+
+        var leaderPartition = 25;       // Partition between leaders (number of followers to leaders)
+
+        // Create velocity
+        velocity = fabs(frand(6.0));
+        velocity = __max(velocity, 1.0);
+
+        // Init the particles, either the first time we start the routine, or when we are told to
+        if (init || !firstInit.value || rand() % 1500 == 0) {
+            // Cycle through particles
+            for (var i=0; i < this.nParticles; i++) {
+                // If this is a leader particle
+                if (i % leaderPartition == 0) {
+                    // Random position of the particle
+                    parent.p[i].x = rand() % (parent.screen.WIDTH-20) + 10;
+                    parent.p[i].y = rand() % (parent.screen.HEIGHT-20) + 10;
+
+                    // Random directions
+                    parent.p[i].dx = frand(1.0) * velocity;
+                    parent.p[i].dy = frand(1.0) * velocity;
+                    //
+                    if (this.altColor) {
+                        parent.p[i].color = rand() % 84 + 170;
+                    }
+                    //
+                    parent.p[i].setTrueColor(parent.pe);
+                }
+                // Dont need to do anything for the non-leaders, as they are updated every frame
+            }
+            
+            firstInit.value = 1;
+        }
+
+        // Cycle through particles
+        for (var i=0; i < this.nParticles; i++) {
+            // If this is a leader particle
+            if (i % leaderPartition == 0) {
+                // Randomly change direction
+                if (rand() % 10000) {
+                    // Random directions
+                    parent.p[i].dx = frand(1.0) * velocity;
+                    parent.p[i].dy = frand(1.0) * velocity;
+                }
+            } else {
+                // Follower particle
+                // Save the leader particle
+                var leader = i - (i % leaderPartition);
+
+                // Move this particle automatically the DX/DY of the leader so that it keeps pace.  This way the particles movement will all be about circling
+                parent.p[i].x += parent.p[i].dx;
+                parent.p[i].y += parent.p[i].dy;
+
+                // Circle around the leader, twice the velocity?
+    //			int lx = parent.p[leader].x, ly = parent.p[leader].y;
+
+                // Set circular delta
+                angle = frand(Math.PI);
+    //			parent.p[i].dx = cos(angle) * velocity;
+                parent.p[i].dx = Math.sin(angle) * velocity;
+                parent.p[i].dy = Math.sin(angle) * velocity;
+                //
+                if (this.altColor) {
+                    parent.p[i].color = rand() % 84 + 170;
+                }
+                //
+                parent.p[i].setTrueColor(parent.pe);
+            }
+        }
     }
 
     doPixieDust(init) {
         console.log('pixie dust');
 
+        var firstInit = Static.init('doPixieDust.firstInit', 0);
+        
         var parent = this.parent;
         var velocity, angle;
 
@@ -646,7 +908,7 @@ class ParticleParticle
         velocity = __max(velocity, 1.0);
 
         // Init the particles, either the first time we start the routine, or when we are told to
-        if (init || !this.firstInit || rand() % 1500 == 0) {
+        if (init || !firstInit.value || rand() % 1500 == 0) {
             // Cycle through particles
             for (var i=0; i < this.nParticles; i++) {
                 // If this is a leader particle
@@ -685,7 +947,7 @@ class ParticleParticle
             }
 
             // Make sure the first init has been marked
-            this.firstInit = 1;
+            firstInit.value = 1;
         }
 
         // Cycle through particles
@@ -756,6 +1018,8 @@ class ParticleParticle
     doGeoff(init) {
         console.log('geoff');
 
+        var firstInit = Static.init('doGeoff.firstInit', 0);
+        
         var velocity, angle;
 
         var leaderPartition = 5;        // Partition between leaders (number of followers to leaders)
@@ -769,7 +1033,7 @@ class ParticleParticle
         velocity = __max(velocity, 1.0);
 
         // Init the particles, either the first time we start the routine, or when we are told to
-        if (init || !this.firstInit || rand() % 1500 == 0) {
+        if (init || !firstInit.value || rand() % 1500 == 0) {
             // Cycle through particles
             for (var i=0; i < this.nParticles; i++) {
                 // If this is a leader particle
@@ -807,7 +1071,7 @@ class ParticleParticle
             }
 
             // Make sure the first init has been marked
-            this.firstInit = 1;
+            firstInit.value = 1;
         }
 
         // Cycle through particles

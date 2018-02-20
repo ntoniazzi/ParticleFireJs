@@ -17,92 +17,14 @@
             <div id="buttons">
                 <button id="start-stop">Start</button>
                 <button id="fullsrcreen">Fullscreen</button>
+                <button id="reset">Reset</button>
             </div>
 
             <div id="controls-container">
-                <form>
-                    <fieldset>
-                        <legend>Fire Options</legend>
-
-                        <div>
-                            <label>Custom</label>
-                            <input type="color" id="custom-color-1" data-index="1"/>
-                            <input type="color" id="custom-color-2" data-index="2"/>
-                        </div>
-
-                        <select id="palette-selector"></select>
-
-                        <!-- div>
-                            <label>
-                                <input type="checkbox" id="random-scheme"/>
-                                Use random scheme
-                            </label>
-                        </div -->
-                        <div>
-                            <label for="cycle-colors">Cycle between colors</label>
-                            <input type="checkbox" id="cycle-colors"/>
-                        </div>
-                        <div>
-                            <label for="multi-colored">Multi-Colored Fire</label>
-                            <input type="checkbox" id="multi-colored"/>
-                        </div>
-                        <div>
-                            <label for="fade-speed">Fade Speed</label>
-                            <input type="range" id="fade-speed" min="0" max="20"/>
-                            <span></span>
-                        </div>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend>Particles</legend>
-                        <div>
-                            <label for="num-particles">Quantity</label>
-                            <input type="range" id="num-particles" min="1" max="10000"/>
-                            <span></span>
-                        </div>
-
-                        <div>
-                            <label for="style">Style</label>
-                            <select id="style">
-                                <option value="-1">Random</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="fire-wall">Fire Wall</label>
-                            <select id="fire-wall" disabled>
-                                <option value="-1">Random</option>
-                                <option value="2">Rainbow</option>
-                                <option value="1">Smoke</option>
-                                <option value="0" selected>None</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="events">Events</label>
-                            <input type="range" id="events" min="1" max="100"/>
-                            <span></span>
-                        </div>
-                        <div>
-                            <label for="gravity">Gravity</label>
-                            <input type="range" id="gravity" min="1" max="200"/>
-                            <span></span>
-                        </div>
-                    </fieldset>
-                </form>
+                <form></form>
             </div>
         </div>
 
         <script src="dist/bundle.js"></script>
-<!--
-        <script src="consts.js"></script>
-        <script src="Color.js"></script>
-        <script src="Palette.js"></script>
-        <script src="Particle.js"></script>
-        <script src="ParticleContainer.js"></script>
-        <script src="ParticleScreen.js"></script>
-        <script src="ParticleParticle.js"></script>
-
-        <script src="index.js"></script>
--->
     </body>
 </html>

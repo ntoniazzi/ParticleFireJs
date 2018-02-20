@@ -50,18 +50,16 @@ canvas {
   max-height: calc(100vh - 50px);
   overflow-y: auto; }
 
-#palette-selector {
+.palette-selector {
   width: 100%; }
-
-#palette-selector option {
-  padding: 6px;
-  background-position: 0 0;
-  background-repeat: repeat-y;
-  background-size: contain;
-  color: #ccc; }
-
-#palette-selector option:checked {
-  font-weight: bold; }
+  .palette-selector option {
+    padding: 6px;
+    background-position: 0 0;
+    background-repeat: repeat-y;
+    background-size: contain;
+    color: #ccc; }
+    .palette-selector option:checked {
+      font-weight: bold; }
 
 #buttons button {
   border: 2px solid #555;

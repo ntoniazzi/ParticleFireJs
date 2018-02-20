@@ -6,27 +6,26 @@ import { Particle } from './Particle'
 import { ParticleContainer } from './ParticleContainer'
 import { ParticleScreen } from './ParticleScreen'
 import { ParticleParticle } from './ParticleParticle'
+import { buildForm } from './form'
 
 var canvasContainer = document.getElementById('canvas-container');
 var element = document.getElementById('x');
-var button = document.getElementById('start-stop');
 var go = false;
 
-button.addEventListener('click', function (event) {
+document.getElementById('start-stop').addEventListener('click', function (event) {
     event.preventDefault();
     go = !go;
     if (go) {
-        button.innerHTML = 'Stop';
+        this.innerHTML = 'Stop';
         window.requestAnimationFrame(draw);
     } else {
-        button.innerHTML = 'Start';
+        this.innerHTML = 'Start';
     }
 }, false);
 
 var container = new ParticleContainer();
-var particle = new ParticleParticle(2000, container);
+var particle = new ParticleParticle(100, container);
 container.particle = particle;
-particle.particleStyle = ParticleParticle.STYLE_EXPLOSIVE;
 
 var screen = new ParticleScreen(container);
 container.screen = screen;
@@ -48,6 +47,7 @@ var updateSize = function () {
 };
 
 window.setTimeout(updateSize, 200);
+window.addEventListener('resize', updateSize);
 
 var delay = null;
 var observer = new MutationObserver(function (list) {
@@ -93,40 +93,167 @@ var fullScreenChange = function () {
 document.addEventListener('mozfullscreenchange', fullScreenChange, false);
 document.addEventListener('webkitfullscreenchange', fullScreenChange, false);
 
+var fieldsets = [
+    {
+        legend: "Debug",
+        options: ["stats", "posdir", "timeout"]
+    },
+    {
+        legend: "Fire options",
+        options: ["customPe1", "customPe2", "colorSchemes", "cycleColors", "fadeSpeed"]
+    },
+    {
+        legend: "Particles",
+        options: ["numParticles", "style", "wall", "events", "gravity"]
+    }
+    ];
+
+    var options = {
+        stats: {
+            type: "checkbox",
+            label: "Show statistics",
+            value: true
+        },
+        posdir: {
+            type: "checkbox",
+            label: "Position & dir",
+            set: (value) => { screen.debug = !!value; }
+        },
+        colorSchemes: {
+            type: "select",
+            label: "Color schemes",
+            cssClass: 'palette-selector',
+            set: (value) => {
+                screen.palette(value);
+                container.p.forEach(function (p) {
+                    p.setTrueColor(container.pe);
+                });
+            },
+            get: () => {}
+        },
+        customPe1: {
+            type: "color",
+            label: "Custom color 1",
+            set: (color) => {
+                screen.customPe1 = Color.create(color);
+            
+                // rebuild custom palette
+                Palette.schemes[Palette.schemes.length - 1].setColors(
+                    screen.customPe1,
+                    screen.customPe2,
+                );
+
+            // TODO: if selected scheme is custom, refresh particles colors
+
+            // refresh form
+            drawPalettes();
+            },
+            get: () => {
+                return screen.customPe1 ? screen.customPe1.toHexValue() : "#FFFFFF";
+            }
+        },
+        customPe2: {
+            type: "color",
+            label: "Custom color 2",
+            set: (color) => {
+                screen.customPe2 = Color.create(color);
+            
+                // rebuild custom palette
+                Palette.schemes[Palette.schemes.length - 1].setColors(
+                    screen.customPe1,
+                    screen.customPe2,
+                );
+
+            // TODO: if selected scheme is custom, refresh particles colors
+
+            // refresh form
+            drawPalettes();
+            },
+            get: () => {
+                return screen.customPe2 ? screen.customPe2.toHexValue() : "#FFFFFF";
+            }
+        },
+        cycleColors: {
+            type: "checkbox",
+            label: "Cycle between colors",
+            set: (value) => { screen.cycleColors = value; options.colorSchemes.input.disabled = value; }
+        },
+        numParticles: {
+            type: "slider",
+            label: "Quantity",
+            min: 1,
+            max: ParticleScreen.MAX_PART,
+            set: (value) => particle.nParticles = value,
+            get: () => { return particle.nParticles }
+        },
+        fadeSpeed: {
+            type: "slider",
+            label: "Fade speed",
+            min: 1,
+            max: 20,
+            set: (value) => { console.log(screen.burnFade, value); screen.burnFade = value | 0 },
+            get: () => { return screen.burnFade }
+        },
+        style: {
+            type: "select",
+            label: "Style",
+            set: (value) => particle.particleStyle = value,
+            get: () => { return particle.particleStyle }
+        },
+        events: {
+            type: "slider",
+            label: "Events",
+            min: 1,
+            max: 100,
+            set: (value) => particle.RANDEFFECT = value,
+            get: () => { return particle.RANDEFFECT }
+        },
+        gravity: {
+            type: "slider",
+            label: "Gravity",
+            min: 1,
+            max: 200,
+            set: (value) => particle.GRAV_TIME = value,
+            get: () => { return particle.GRAV_TIME }
+        },
+        timeout: {
+            type: "slider",
+            label: "Frame rate",
+            min: 20,
+            max: 500,
+            step: 10,
+            value: 200
+        }
+    };
+
+    var form = document.querySelector('form');
+
+    buildForm(fieldsets, options, form);
+
 // Palettes
-var selector = document.getElementById('palette-selector');
-var canvas = document.createElement('canvas');
-canvas.width = 256;
-canvas.height = 1;
-var ctx = canvas.getContext("2d");
+    (function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 1;
+        var ctx = canvas.getContext("2d");
 
-var drawPalettes = function () {
-    selector.innerHTML = "";
-    Palette.schemes.forEach(function (palette, index) {
-        var option = drawPalette(index, palette.name, palette.colors);
-        selector.appendChild(option);
-    });
+        var selector = options.colorSchemes.input;
+        selector.innerHTML = "";
+        Palette.schemes.forEach(function (palette, index) {
+            ctx.fillStyle = 'transparent';
+            ctx.fillRect(0, 0, 256, 32);
+            palette.colors.forEach(function (color, i) {
+                ctx.fillStyle = `rgb(${color.red} , ${color.green}, ${color.blue})`;
+                ctx.fillRect(i, 0, 1, 1);
+            });
+        
+            var option = new Option(palette.name, index);
+            option.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
+            selector.appendChild(option);
+        });
 
-    selector.size = Palette.schemes.length;
-};
-
-var drawPalette = function (index, name, colors) {
-    var li = new Option(name, index);
-
-    colors.forEach(function (color, i) {
-        ctx.fillStyle = `rgb(${color.red} , ${color.green}, ${color.blue})`;
-        ctx.fillRect(i, 0, 1, 1);
-    });
-
-    li.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
-
-    ctx.fillStyle = 'transparent';
-    ctx.fillRect(0, 0, 256, 32);
-
-    return li;
-};
-
-var customPe1, customPe2, cycleColors, numPartSlider, fadeSpeedSlider, eventSlider, gravitySlider, style;
+        selector.size = Palette.schemes.length;
+    })();
 
 var fs = document.getElementById('fullsrcreen');
 fs.addEventListener('click', function () {
@@ -145,135 +272,24 @@ fs.addEventListener('click', function () {
     }
 }, false);
 
-[].slice.call(document.querySelectorAll('input[type=range]')).forEach(function (element) {
+document.querySelectorAll('input[type=range]').forEach(function (element) {
     element.addEventListener('input', function () {
         element.nextElementSibling.innerHTML = element.value;
     }, false);
 });
 
-// Events
-var form = document.querySelector('form');
-form.addEventListener('change', function (event) {
-    var input = event.target;
-
-    switch (input) {
-        case selector:
-            // color scheme
-            screen.palette(input.value);
-            container.p.forEach(function (p) {
-                p.setTrueColor(container.pe);
-            });
-
-            break;
-
-        case customPe1:
-        case customPe2:
-            var index = input.dataset.index | 0;
-            var value = parseInt(input.value.substr(1), 16);
-            var color = new Color(
-                value >> 16 & 255,
-                value >> 8 & 255,
-                value & 255,
-            );
-
-            screen[index === 1 ? 'customPe1' : 'customPe2'] = color;
-
-            // rebuild custom palette
-            Palette.schemes[Palette.schemes.length - 1].setColors(
-                screen.customPe1,
-                screen.customPe2,
-            );
-
-            // TODO: if selected scheme is custom, refresh particles colors
-
-            // refresh form
-            drawPalettes();
-
-            break;
-
-        case eventSlider:
-            particle.RANDEFFECT = input.value | 0;
-
-            break;
-
-        case gravitySlider:
-            particle.GRAV_TIME = input.value | 0;
-
-            break;
-
-        case cycleColors:
-            screen.cycleColors = input.checked;
-            selector.disabled = input.checked;
-
-            break;
-
-        case numPartSlider:
-            particle.nParticles = input.value | 0;
-
-            break;
-
-        case fadeSpeedSlider:
-            screen.burnFade = input.value | 0;
-
-            break;
-
-        case style:
-            particle.particleStyle = input.value | 0;
-
-            break;
-    }
+// reset button
+document.getElementById('reset').addEventListener('click', function (event) {
+    particle.doStatic(1);
 }, false);
 
-customPe1 = document.getElementById('custom-color-1');
-customPe1.value = screen.customPe1.toHexValue();
-
-customPe2 = document.getElementById('custom-color-2');
-customPe2.value = screen.customPe2.toHexValue();
-
-cycleColors = document.getElementById('cycle-colors');
-cycleColors.checked = screen.cycleColors;
-
-numPartSlider = document.getElementById('num-particles');
-numPartSlider.value = particle.nParticles;
-numPartSlider.min = 1;
-numPartSlider.max = ParticleScreen.MAX_PART;
-
-fadeSpeedSlider = document.getElementById('fade-speed');
-fadeSpeedSlider.value = screen.burnFade;
-fadeSpeedSlider.min = 1;
-fadeSpeedSlider.max = 20;
-
-eventSlider = document.getElementById('events');
-eventSlider.value = particle.RANDEFFECT;
-eventSlider.min = 1;
-eventSlider.max = 100;
-
-gravitySlider = document.getElementById('gravity');
-gravitySlider.value = particle.GRAV_TIME;
-gravitySlider.min = 1;
-gravitySlider.max = 200;
-
-style = document.getElementById('style');
-ParticleParticle.styles.forEach(function(name, index) {
+ParticleParticle.styles.forEach(function (name, index) {
     var option = new Option(name, index);
-    style.appendChild(option);
+    options.style.input.appendChild(option);
 });
 
-//selector.addEventListener('click', function (event) {
-//    if (!event.target.matches('li')) {
-//        return;
-//    }
-//
-//    event.stopPropagation();
-//    screen.palette(event.target.dataset.index);
-//
-//    container.p.forEach(function (p) {
-//        p.setTrueColor(container.pe);
-//    });
-//}, false);
-
 var frames = 0;
-var cycleFrameDelay = 10;
+//var cycleFrameDelay = 10;
 var cycleT = 1.1;
 var lastTime = Date.now();
 var fps;
@@ -290,17 +306,23 @@ var draw = function () {
     }
     frames++;
 
-    screen.write(10, 10, `Frame: ${frames}
-${screen.width}×${screen.height}
-Color scheme: ${Palette.schemes[screen.colorScheme].name}
-Particles: ${particle.nParticles}
-Style: ${ParticleParticle.styles[particle.particleStyle]}
-Fade speed: ${screen.burnFade}
-Event speed: ${particle.RANDEFFECT}
-FPS: ${fps}
-`);
+    if (options.stats.value) {
+        screen.write(
+            10,
+            10,
+            `Frame: ${frames}
+            ${screen.width}×${screen.height}
+            Color scheme: ${Palette.schemes[screen.colorScheme].name}
+            Particles: ${particle.nParticles}
+            Style: ${ParticleParticle.styles[particle.particleStyle]}
+            Fade speed: ${screen.burnFade}
+            Event speed: ${particle.RANDEFFECT}
+            FPS: ${fps}
+            `
+        );
+    }
 
-    if (container.screen.cycleColors && frames % 2 == 0) {
+    if (container.screen.cycleColors && frames % 2 === 0) {
         cycleT += 0.01;
         if (cycleT >= 1.0) {
             container.cf = container.screen.colorScheme;
@@ -331,8 +353,14 @@ FPS: ${fps}
     }
 
     if (go) {
-        window.requestAnimationFrame(draw);
+        if (options.timeout.value <= 20) {
+            // 60fps → 16ms, so drop to animationFrame only
+            window.requestAnimationFrame(draw);
+        } else {
+//            // timeout, then request animation frame
+            window.setTimeout(function () {
+                window.requestAnimationFrame(draw);
+            }, options.timeout.value);
+        }
     }
 };
-
-drawPalettes();

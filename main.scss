@@ -58,20 +58,20 @@ canvas {
 	overflow-y: auto;
 }
 
-#palette-selector {
+.palette-selector {
     width: 100%;
-}
 
-#palette-selector option {
-	padding: 6px;
-	background-position: 0 0;
-	background-repeat: repeat-y;
-	background-size: contain;
-    color: #ccc;
-}
-
-#palette-selector option:checked {
-    font-weight: bold;
+    option {
+        padding: 6px;
+        background-position: 0 0;
+        background-repeat: repeat-y;
+        background-size: contain;
+        color: #ccc;
+        
+        &:checked {
+            font-weight: bold;
+        }
+    }
 }
 
 #buttons button {

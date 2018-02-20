@@ -12,7 +12,8 @@ const BYOFF = 2;
 
 class ParticleScreen
 {
-    constructor(container) {
+    constructor(container)
+    {
         this.parent = container;
 
         this.flameSpeed = 0.03;
@@ -27,14 +28,17 @@ class ParticleScreen
 
         this.customPe1 = new Color(0,0,0);
         this.customPe2 = new Color(255,255,255);
+        
+        this.debug = false;
     }
 
-    initScreen(canvas) {
+    initScreen(canvas)
+    {
         var parent = this.parent;
 
-        this.dib = canvas;
-        this.width = this.WIDTH = this.dib.width;
-        this.height = this.HEIGHT = this.dib.height;
+        this.canvas = canvas;
+        this.width = this.WIDTH = this.canvas.width;
+        this.height = this.HEIGHT = this.canvas.height;
 
         if (this.randomColor) {
             this.colorScheme = rand() % (Palette.schemes.length);
@@ -63,7 +67,7 @@ class ParticleScreen
         parent.particle.noiseBurn = rand() & 1;
         parent.particle.useGravity = rand() & 1;
 
-        this.ctx = this.dib.getContext('2d');
+        this.ctx = this.canvas.getContext('2d');
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.width, this.height);
         this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
@@ -81,7 +85,8 @@ class ParticleScreen
         });
     }
 
-    draw() {
+    draw()
+    {
         var data = this.imageData.data;
         var pitch = 4 * this.WIDTH;
         var temp = 0;
@@ -105,15 +110,21 @@ class ParticleScreen
 
             // Burn up
             var TCBURNIT = function () {
+                /*
+                 * Some kind of convolution centered on the pixel above:
+                 * ([ 0 0 0
+                 *   0 1 0
+                 *   1 1 1 ] - BURNFADE) / 4
+                 */
                 // for each component (red, green and blue)
                 for (var comp = 0; comp < 4; comp++) {
                     temp = (
-                        data[lptr + comp - pitch] + // up
-                        data[lptr + comp - 4] +     // left
-                        data[lptr + comp] +             // current
-                        data[lptr + comp + 4] -     // right
-                        BURNFADE                        // fade
-                    ) >> 2;                             // mean
+                        data[lptr + comp - pitch] +
+                        data[lptr + comp - 4] +
+                        data[lptr + comp] +
+                        data[lptr + comp + 4] -
+                        BURNFADE
+                    ) >> 2;
                     data[lptr + comp - pitch] = temp < 0 ? 0 : temp;
                 }
             };
@@ -144,29 +155,6 @@ class ParticleScreen
                         // alpha
                         data[lptr+3] = 255;
                         TCBURNIT();
-                        // red
-//                        TCBURNIT(); // red
-//                        TCBURNIT(1); // green
-//                        TCBURNIT(2); // blue
-//                        TCBURNIT(3);
-
-//                        lptr++;
-                        // green
-//                        TCBURNIT(0);
-//                        TCBURNIT(1);
-//                        TCBURNIT(2);
-//                        TCBURNIT(3);
-//                        lptr++;
-                        // blue
-//                        TCBURNIT(0);
-//                        TCBURNIT(1);
-//                        TCBURNIT(2);
-//                        TCBURNIT(3);
-//                        data[lptr] = 255;
-//                        lptr++;
-                        // alpha
-
-
 
                         lptr+=4;
                     }
@@ -175,6 +163,53 @@ class ParticleScreen
         }
 
         this.ctx.putImageData(this.imageData, 0, 0);
+
+        if (this.debug) {
+            var parent = this.parent;
+
+            for (var i = 0; i < parent.particle.nParticles; i++) {
+                // position
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    parent.p[i].x,
+                    parent.p[i].y,
+                    5,
+                    0,
+                    2 * Math.PI
+                );
+                this.ctx.strokeStyle = "red";
+                this.ctx.stroke();
+                this.ctx.closePath();
+
+                // direction
+                this.ctx.beginPath();
+                this.ctx.moveTo(
+                    parent.p[i].x,
+                    parent.p[i].y
+                );
+                this.ctx.lineTo(
+                    parent.p[i].x + parent.p[i].dx * 10,
+                    parent.p[i].y + parent.p[i].dy * 10
+                );
+                this.ctx.strokeStyle = "lime";
+                this.ctx.stroke();
+                this.ctx.closePath();
+
+                // last pos
+    //            this.ctx.beginPath();
+    //            this.ctx.moveTo(
+    //                parent.p[i].lx,
+    //                parent.p[i].ly
+    //            );
+    //            this.ctx.lineTo(
+    //                parent.p[i].x,
+    //                parent.p[i].y
+    //            );
+    //            this.ctx.strokeStyle = "blue";
+    //            this.ctx.stroke();
+    //            this.ctx.closePath();
+            }
+        }
     }
 
     drawParticles() {
