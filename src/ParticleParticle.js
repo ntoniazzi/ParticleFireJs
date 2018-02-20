@@ -30,12 +30,12 @@ class ParticleParticle
         this.particleStyle = ParticleParticle.STYLE_NORMAL;
         this.wallStyle = 0;
         this.zMoveSpeed = 2;
-        
+
         this.nParticles = numParticles;
         this.GRAV_TIME = 50;
         this.RANDEFFECT = 75;
         this.altColor = false;
-        
+
         this.noiseBurn = false;
         this.follow = true;
         this.multipleFollow = true;
@@ -59,16 +59,16 @@ class ParticleParticle
         //, MouseX, MouseY;
         this.innerRing = false;
         this.popcorn = false;
-        
+
         this.emitRotate = 0;
         this.xgrav = 0.0;
         this.ygrav = 0.0;
         this.burnDown = false;
-        
+
         this.squigglyWiggly = false;
         this.galacticStorm = false;
         this.pixieDust = false;
-        
+
         this.magnetX = 0;
         this.magnetY = 0;
     }
@@ -469,7 +469,7 @@ class ParticleParticle
         var parent = this.parent;
 
         var firstInit = Static.init('doStatic.firstInit', 0);
-        
+
         if (init || firstInit.value == 0) {
             firstInit.value = 1;
 
@@ -488,7 +488,7 @@ class ParticleParticle
             for (var i = 0; i < t; i++) {
                 parent.p[i].x = x;
                 parent.p[i].y = y;
-                
+
                 var tx = x - w/2, ty = y - h/2;
                 var d = Math.sqrt(tx * tx + ty * ty);
 
@@ -519,9 +519,9 @@ class ParticleParticle
 
     doExplode() {
         var parent = this.parent;
-        
+
         var firstInit = Static.init('doExplode.firstInit', 0);
-        
+
         if (this.particleStyle !== ParticleParticle.STYLE_EXPLOSIVE || firstInit.value == 0 || (this.particleStyle == ParticleParticle.STYLE_EXPLOSIVE && rand() % 50 == 0)) {
             console.log('explode');
 
@@ -591,7 +591,7 @@ class ParticleParticle
     doEmit() {
         console.log('emit');
         var parent = this.parent;
-        
+
         var firstInit = Static.init('doEmit.firstInit', 0);
 
         if (this.particleStyle != ParticleParticle.STYLE_SPIRALS || firstInit.value == 0 || (this.particleStyle == ParticleParticle.STYLE_SPIRALS && rand()%500 == 0) ) {
@@ -662,12 +662,12 @@ class ParticleParticle
 
     doRainbowHole(initNow) {
         console.log('rainbow hole');
-        
+
         var parent = this.parent;
-        
+
         var init = Static.init('doRainbowHole.init', 0);        // Has this style been init'd?
         var velocity = Static.init('doRainbowHole.velocity', 0);
-        
+
         // Randomly re-init the pepper
         //	if (rand()%175 == 0 || !init)
         if (!init.value || initNow || (this.particleStyle == ParticleParticle.STYLE_RAINBOWHOLE && rand()%1000 == 0)) {
@@ -676,14 +676,14 @@ class ParticleParticle
 
             // Randomly pick new magnet point
             this.magnetX = parent.screen.WIDTH/2 + rand() % 100 - 50;
-        
+
             // If we are burning up
             if (!this.burnDown) {
                 this.magnetY = __min(parent.screen.HEIGHT/2 + rand()%80 - 40 + (parent.screen.HEIGHT/4), parent.screen.HEIGHT-20);
             } else {
                 this.magnetY = __max(parent.screen.HEIGHT/2 + rand()%80 - 40 - (parent.screen.HEIGHT/4), 20);
             }
-                
+
             // Cycle through the particles
             for (var i = 0; i < this.nParticles; i++) {
                 // Randomly place the particles on the screen
@@ -699,7 +699,7 @@ class ParticleParticle
                 if (this.altColor) {
                     parent.p[i].color = rand() % 84 + 170;
                 }
-            
+
                 parent.p[i].setTrueColor(parent.pe);
             }
 
@@ -733,11 +733,11 @@ class ParticleParticle
             }
         }
     }
-    
+
     distance(x1, y1, x2, y2) {
         var dist;
         var tx, ty;         // Temp
-    
+
         // Check Special Cases //
         if (x1 == x2) {
             return fabs(y1 - y2);
@@ -816,7 +816,7 @@ class ParticleParticle
     doGalacticStorm(init) {
         console.log('galactic storm');
         var parent = this.parent;
-        
+
         var firstInit = Static.init('doGalacticStorm.firstInit', 0);
         var velocity, angle;
 
@@ -848,7 +848,7 @@ class ParticleParticle
                 }
                 // Dont need to do anything for the non-leaders, as they are updated every frame
             }
-            
+
             firstInit.value = 1;
         }
 
@@ -893,7 +893,7 @@ class ParticleParticle
         console.log('pixie dust');
 
         var firstInit = Static.init('doPixieDust.firstInit', 0);
-        
+
         var parent = this.parent;
         var velocity, angle;
 
@@ -1019,7 +1019,7 @@ class ParticleParticle
         console.log('geoff');
 
         var firstInit = Static.init('doGeoff.firstInit', 0);
-        
+
         var velocity, angle;
 
         var leaderPartition = 5;        // Partition between leaders (number of followers to leaders)

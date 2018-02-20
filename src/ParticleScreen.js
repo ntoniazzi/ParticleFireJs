@@ -28,7 +28,7 @@ class ParticleScreen
 
         this.customPe1 = new Color(0,0,0);
         this.customPe2 = new Color(255,255,255);
-        
+
         this.debug = false;
     }
 

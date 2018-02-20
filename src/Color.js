@@ -13,7 +13,7 @@ class Color
 
         return `#${red}${green}${blue}`;
     }
-    
+
     static create(value) {
         var intVal = parseInt(value.substring(1), 16);
 
@@ -22,7 +22,7 @@ class Color
             intVal >> 8 & 255,
             intVal & 255,
         );
-        
+
         return color;
     }
 /*

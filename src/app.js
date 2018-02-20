@@ -136,7 +136,7 @@ var fieldsets = [
             label: "Custom color 1",
             set: (color) => {
                 screen.customPe1 = Color.create(color);
-            
+
                 // rebuild custom palette
                 Palette.schemes[Palette.schemes.length - 1].setColors(
                     screen.customPe1,
@@ -157,7 +157,7 @@ var fieldsets = [
             label: "Custom color 2",
             set: (color) => {
                 screen.customPe2 = Color.create(color);
-            
+
                 // rebuild custom palette
                 Palette.schemes[Palette.schemes.length - 1].setColors(
                     screen.customPe1,
@@ -246,7 +246,7 @@ var fieldsets = [
                 ctx.fillStyle = `rgb(${color.red} , ${color.green}, ${color.blue})`;
                 ctx.fillRect(i, 0, 1, 1);
             });
-        
+
             var option = new Option(palette.name, index);
             option.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
             selector.appendChild(option);

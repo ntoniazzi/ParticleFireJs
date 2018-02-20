@@ -6,7 +6,7 @@ var doc;
 
 var buildInput = function (key, config) {
     var input, label, div;
-        
+
     var id = "input-" + key;
     div = doc.createElement('div');
 
@@ -64,7 +64,7 @@ var buildInput = function (key, config) {
 
 var buildForm = function (fieldsets, options, form) {
     doc = form.ownerDocument;
-    
+
     // render fieldsets
     fieldsets.forEach(function (fieldset) {
         var ui = doc.createElement("fieldset");
@@ -75,29 +75,29 @@ var buildForm = function (fieldsets, options, form) {
             legend.appendChild(doc.createTextNode(fieldset.legend));
             ui.appendChild(legend);
         }
-        
+
         fieldset.options.forEach(function (name) {
             if (!options[name]) {
                 return;
             }
-            
+
             var inputUi = buildInput(name, options[name]);
             ui.appendChild(inputUi);
         });
     });
-    
+
     // render other inputs
     Object.entries(options).forEach(function (item) {
         var [key, config] = item;
-        
+
         if (config.input) {
             return;
         }
-        
+
         var inputUi = buildInput(key, config);
         form.appendChild(inputUi);
     });
-    
+
     // event loop
     form.addEventListener('change', function (event) {
         var input = event.target;
@@ -109,7 +109,7 @@ var buildForm = function (fieldsets, options, form) {
 
         var type = input.type;
         var value;
-        
+
         if (type === 'checkbox') {
             value = input.checked;
         } else if (type === 'select') {
@@ -119,7 +119,7 @@ var buildForm = function (fieldsets, options, form) {
         } else {
             value = input.value;
         }
-        
+
         if (config.set) {
             config.set(value);
         } else {
